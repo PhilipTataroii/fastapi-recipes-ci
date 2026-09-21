@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String, Text
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Integer, String, Text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 
 class Recipe(Base):
@@ -10,9 +11,9 @@ class Recipe(Base):
 
     __tablename__ = "recipe"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    cooking_time = Column(Integer, nullable=False)
-    ingredients = Column(Text, nullable=False)
-    description = Column(Text, nullable=False)
-    views = Column(Integer, default=0, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    cooking_time: Mapped[int] = mapped_column(Integer, nullable=False)
+    ingredients: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    views: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

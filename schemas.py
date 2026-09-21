@@ -75,4 +75,3 @@ class RecipeCreated(BaseModel):
     views: int = Field(
         description="Количество просмотров рецепта",
     )
-

@@ -1,17 +1,12 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import SessionLocal, engine
 from models import Base, Recipe
-from schemas import (
-    RecipeCreate,
-    RecipeList,
-    RecipeDetail,
-    RecipeCreated,
-)
+from schemas import RecipeCreate, RecipeCreated, RecipeDetail, RecipeList
 
 
 @asynccontextmanager
@@ -51,7 +46,8 @@ async def get_db():
     summary="Создать рецепт",
     description=(
         "Создаёт новый рецепт в кулинарной книге. "
-        "Количество просмотров нового рецепта автоматически устанавливается в 0."
+        "Количество просмотров нового рецепта "
+        "автоматически устанавливается в 0."
     ),
 )
 async def create_recipe(
@@ -81,14 +77,16 @@ async def create_recipe(
     summary="Получить список рецептов",
     description=(
         "Возвращает список всех рецептов. "
-        "Рецепты сортируются по количеству просмотров от большего к меньшему. "
-        "При одинаковом количестве просмотров рецепты сортируются "
-        "по времени приготовления от меньшего к большему."
+        "Рецепты сортируются по количеству просмотров "
+        "от большего к меньшему. "
+        "При одинаковом количестве просмотров рецепты "
+        "сортируются по времени приготовления "
+        "от меньшего к большему."
     ),
 )
 async def read_recipes(
     db: AsyncSession = Depends(get_db),
-) -> list[RecipeList]:
+) -> list[Recipe]:
     """Возвращает отсортированный список рецептов."""
 
     query = select(Recipe).order_by(
@@ -97,7 +95,7 @@ async def read_recipes(
     )
 
     result = await db.execute(query)
-    recipes = result.scalars().all()
+    recipes = list(result.scalars().all())
 
     return recipes
 
@@ -107,25 +105,20 @@ async def read_recipes(
     response_model=RecipeDetail,
     summary="Получить рецепт",
     description=(
-        "Возвращает подробную информацию о рецепте по его идентификатору. "
-        "При каждом успешном открытии рецепта количество его просмотров "
-        "увеличивается на один."
+        "Возвращает подробную информацию о рецепте "
+        "по его идентификатору. "
+        "При каждом успешном открытии рецепта "
+        "количество его просмотров увеличивается на один."
     ),
-    responses={
-        404: {
-            "description": "Рецепт с указанным идентификатором не найден"
-        }
-    },
+    responses={404: {"description": ("Рецепт с указанным идентификатором не найден")}},
 )
 async def read_recipe(
     recipe_id: int,
     db: AsyncSession = Depends(get_db),
-) -> RecipeDetail:
+) -> Recipe:
     """Возвращает подробную информацию о выбранном рецепте."""
 
-    query = select(Recipe).where(
-        Recipe.id == recipe_id
-    )
+    query = select(Recipe).where(Recipe.id == recipe_id)
 
     result = await db.execute(query)
     recipe = result.scalar_one_or_none()
@@ -142,4 +135,3 @@ async def read_recipe(
     await db.refresh(recipe)
 
     return recipe
-
